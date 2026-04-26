@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>專業提詞器 · 語音版｜演講輔助工具</title>
+
+    <!-- Google Fonts - Noto Sans TC 繁體中文優化字型 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* 深色主題（預設） */
+            --bg-primary: #0d0d14;
+            --bg-secondary: #161625;
+            --bg-tertiary: #1e1e32;
+            --bg-display: #000005;
+            --text-primary: #e8e8f0;
+            --text-secondary: #b0b0c0;
+            --text-display: #ffffff;
+            --accent: #5b9cf5;
+            --accent-glow: rgba(91, 156, 245, 0.3);
+            --accent-subtle: rgba(91, 156, 245, 0.12);
+            --border: #2a2a3d;
+            --border-light: #333350;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.7);
+            --guide-line: rgba(255, 255, 255, 0.08);
+            --highlight-band: rgba(255, 255, 255, 0.04);
+            --overlay-bg: rgba(0, 0, 0, 0.85);
+            --btn-bg: #1e1e35;
+            --btn-hover: #2a2a48;
+            --btn-active: #323260;
+            --danger: #e0556a;
+            --success: #4caf84;
+            --warning: #e0a840;
+            --voice-active: #4caf84;
+            --voice-pause: #e0a840;
+            --scrollbar-thumb: #3a3a55;
+            --scrollbar-track: #12121f;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+            --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f5f5f8;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #eaeaef;
+            --bg-display: #fafafc;
+            --text-primary: #1a1a2e;
+            --text-secondary: #555570;
+            --text-display: #111122;
+            --accent: #3b7de0;
+            --accent-glow: rgba(59, 125, 224, 0.2);
+            --accent-subtle: rgba(59, 125, 224, 0.08);
+            --border: #d8d8e0;
+            --border-light: #e5e5ed;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 36px rgba(0, 0, 0, 0.13);
+            --guide-line: rgba(0, 0, 0, 0.06);
+            --highlight-band: rgba(0, 0, 0, 0.025);
+            --overlay-bg: rgba(255, 255, 255, 0.9);
+            --btn-bg: #e8e8f0;
+            --btn-hover: #dcdce8;
+            --btn-active: #d0d0e0;
+            --scrollbar-thumb: #c0c0d0;
+            --scrollbar-track: #eaeaef;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background var(--transition-normal), color var(--transition-normal);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ========== 頂部工具列 ========== */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            gap: 8px;
+            flex-shrink: 0;
+            transition: background var(--transition-normal), border-color var(--transition-normal);
+        }
+        .toolbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+        .toolbar-brand .icon {
+            font-size: 1.3rem;
+        }
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--btn-bg);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: all var(--transition-fast);
+            outline: none;
+            position: relative;
+            letter-spacing: 0.01em;
+        }
+        .btn:hover {
+            background: var(--btn-hover);
+            border-color: var(--border-light);
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            background: var(--btn-active);
+            transform: scale(0.97);
+            transition: transform 0.08s ease;
+        }
+        .btn.active {
+            background: var(--accent-subtle);
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        .btn.accent {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            font-weight: 500;
+        }
+        .btn.accent:hover {
+            box-shadow: 0 0 18px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+        .btn.danger {
+            background: transparent;
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .btn.danger:hover {
+            background: rgba(224, 85, 106, 0.1);
+        }
+        .btn.voice-active {
+            border-color: var(--voice-active);
+            color: var(--voice-active);
+        }
+        .btn.voice-pause {
+            border-color: var(--voice-pause);
+            color: var(--voice-pause);
+        }
+        .btn-icon {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 1.1rem;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            border-radius: var(--radius-sm);
+        }
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+            margin: 0 4px;
+            flex-shrink: 0;
+            transition: background var(--transition-normal);
+        }
+
+        /* ========== 主佈局 ========== */
+        .main-container {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        /* ========== 提詞顯示區 ========== */
+        .display-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+            background: var(--bg-display);
+            transition: background var(--transition-normal);
+        }
+        .display-viewport {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            min-height: 0;
+        }
+        .display-viewport.mirror-mode {
+            transform: scaleX(-1);
+        }
+
+        /* 中央參考線 */
+        .guide-line {
+            position: absolute;
+            left: 5%;
+            right: 5%;
+            height: 2px;
+            top: 42%;
+            background: var(--guide-line);
+            z-index: 10;
+            pointer-events: none;
+            transition: background var(--transition-normal);
+            box-shadow: 0 0 30px 8px var(--highlight-band);
+        }
+        .guide-line::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -18px;
+            bottom: -18px;
+            background: linear-gradient(180deg,
+                    transparent 0%,
+                    var(--highlight-band) 35%,
+                    var(--highlight-band) 65%,
+                    transparent 100%);
+            pointer-events: none;
+            border-radius: 4px;
+        }
+
+        /* 滾動文字容器 */
+        .text-scroller {
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            top: 0;
+            will-change: transform;
+            padding-bottom: 50vh;
+            padding-top: 40vh;
+            line-height: 1.7;
+            transition: font-size var(--transition-normal);
+        }
+        .text-scroller .paragraph {
+            margin-bottom: 0.6em;
+            opacity: 0.9;
+            transition: opacity var(--transition-fast);
+        }
+
+        .empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            color: var(--text-secondary);
+            gap: 12px;
+            transition: opacity var(--transition-normal);
+        }
+        .empty-state .icon-large {
+            font-size: 3.5rem;
+            opacity: 0.4;
+        }
+        .empty-state p {
+            font-size: 0.95rem;
+            letter-spacing: 0.03em;
+        }
+
+        /* ========== 編輯面板 ========== */
+        .editor-panel {
+            width: 380px;
+            flex-shrink: 0;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: all var(--transition-slow);
+            z-index: 50;
+        }
+        .editor-panel.collapsed {
+            width: 0;
+            border-left: none;
+            overflow: hidden;
+            padding: 0;
+        }
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            gap: 8px;
+        }
+        .editor-header h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .editor-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            min-height: 200px;
+            transition: background var(--transition-normal), color var(--transition-normal);
+            letter-spacing: 0.02em;
+        }
+        .editor-textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+        .editor-textarea:focus {
+            background: var(--bg-display);
+        }
+        .editor-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 16px;
+            border-top: 1px solid var(--border);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+        .editor-stats span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .editor-stats .stat-value {
+            font-weight: 600;
+            color: var(--accent);
+            font-variant-numeric: tabular-nums;
+            font-family: var(--font-mono);
+        }
+
+        /* ========== 底部控制列 ========== */
+        .control-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 90;
+            transition: all var(--transition-normal);
+        }
+        .speed-group,
+        .voice-controls-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .speed-label,
+        .voice-label {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+        }
+        .speed-slider,
+        .voice-slider {
+            width: 70px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 6px;
+            border-radius: 3px;
+        }
+        .speed-value,
+        .voice-value {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 36px;
+            text-align: center;
+            font-family: var(--font-mono);
+        }
+        .preset-btn {
+            padding: 4px 8px;
+            font-size: 0.72rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--btn-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .preset-btn:hover {
+            background: var(--btn-hover);
+            color: var(--text-primary);
+        }
+        .preset-btn.active-preset {
+            background: var(--accent-subtle);
+            border-color: var(--accent);
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .timer-display {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            letter-spacing: 0.04em;
+            min-width: 55px;
+            text-align: center;
+        }
+
+        /* 語音面板折疊區 */
+        .voice-panel {
+            display: none;
+            width: 100%;
+            flex-basis: 100%;
+            padding: 8px 0 4px;
+            border-top: 1px dashed var(--border);
+            margin-top: 4px;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .voice-panel.visible {
+            display: flex;
+        }
+        .voice-select {
+            padding: 5px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--btn-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.8rem;
+            max-width: 160px;
+            cursor: pointer;
+            outline: none;
+        }
+        .voice-select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* ========== 全螢幕覆蓋層 ========== */
+        .fullscreen-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000;
+            flex-direction: column;
+        }
+        .fullscreen-overlay.active {
+            display: flex;
+        }
+        .fullscreen-overlay .fs-display {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .fullscreen-overlay .fs-guide {
+            position: absolute;
+            left: 5%;
+            right: 5%;
+            height: 2px;
+            top: 42%;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 10;
+            pointer-events: none;
+            box-shadow: 0 0 40px 12px rgba(255, 255, 255, 0.03);
+        }
+        .fullscreen-overlay .fs-scroller {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            top: 0;
+            will-change: transform;
+            padding-bottom: 50vh;
+            padding-top: 40vh;
+            line-height: 1.7;
+            color: #fff;
+        }
+        .fullscreen-overlay .fs-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            backdrop-filter: blur(8px);
+            transition: all var(--transition-fast);
+        }
+        .fullscreen-overlay .fs-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: all var(--transition-normal);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            letter-spacing: 0.02em;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== 響應式設計 ========== */
+        @media (max-width: 1024px) {
+            .editor-panel {
+                width: 320px;
+            }
+            .text-scroller {
+                left: 6%;
+                right: 6%;
+            }
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .editor-panel {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                max-height: 55vh;
+                border-left: none;
+                border-top: 2px solid var(--border);
+                border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+                transform: translateY(0);
+                box-shadow: var(--shadow-lg);
+                transition: transform var(--transition-slow);
+                z-index: 200;
+            }
+            .editor-panel.mobile-hidden {
+                transform: translateY(92%);
+            }
+            .editor-panel .editor-handle {
+                display: block;
+                width: 36px;
+                height: 5px;
+                background: var(--border-light);
+                border-radius: 3px;
+                margin: 8px auto;
+                cursor: grab;
+                flex-shrink: 0;
+            }
+            .display-viewport {
+                min-height: 200px;
+            }
+            .text-scroller {
+                left: 4%;
+                right: 4%;
+            }
+            .toolbar {
+                padding: 8px 10px;
+                gap: 4px;
+            }
+            .btn {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+                gap: 3px;
+            }
+            .btn-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.95rem;
+            }
+            .divider {
+                margin: 0 2px;
+                height: 18px;
+            }
+            .control-bar {
+                gap: 6px;
+                padding: 8px 10px;
+            }
+            .speed-slider,
+            .voice-slider {
+                width: 55px;
+            }
+            .voice-select {
+                max-width: 120px;
+                font-size: 0.7rem;
+            }
+            .guide-line {
+                top: 40%;
+            }
+        }
+        @media (max-width: 400px) {
+            .toolbar-actions {
+                gap: 2px;
+            }
+            .btn {
+                padding: 5px 7px;
+                font-size: 0.7rem;
+            }
+            .btn-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.85rem;
+            }
+            .speed-slider,
+            .voice-slider {
+                width: 45px;
+            }
+            .text-scroller {
+                left: 3%;
+                right: 3%;
+            }
+            .control-bar {
+                gap: 3px;
+                padding: 6px 6px;
+            }
+        }
+
+        @media (max-width: 768px) and (orientation: landscape) {
+            .main-container {
+                flex-direction: row;
+            }
+            .editor-panel {
+                position: relative;
+                width: 35%;
+                max-height: none;
+                border-radius: 0;
+                border-left: 1px solid var(--border);
+                border-top: none;
+                transform: none !important;
+                box-shadow: none;
+            }
+            .editor-panel .editor-handle {
+                display: none;
+            }
+            .editor-panel.mobile-hidden {
+                transform: none !important;
+                width: 0;
+                border-left: none;
+                overflow: hidden;
+            }
+            .display-section {
+                flex: 1;
+            }
+            .control-bar {
+                padding: 6px 8px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 3px;
+        }
+
+        @keyframes pulse-glow {
+            0%,
+            100% {
+                box-shadow: 0 0 8px var(--accent-glow);
+            }
+            50% {
+                box-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(91, 156, 245, 0.15);
+            }
+        }
+        .playing-indicator {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 頂部工具列 ==================== -->
+    <header class="toolbar" id="toolbar">
+        <div class="toolbar-brand">
+            <span class="icon">🎙️</span>
+            <span>專業提詞器</span>
+        </div>
+        <div class="toolbar-actions">
+            <button class="btn btn-sm" id="btnEdit" title="切換編輯面板">
+                ✏️ <span class="label-text">編輯</span>
+            </button>
+            <span class="divider"></span>
+            <button class="btn btn-sm" id="btnMirror" title="鏡面翻轉模式（配合反射鏡使用）">
+                🔄 <span class="label-text">鏡面</span>
+            </button>
+            <button class="btn btn-sm" id="btnFullscreen" title="全螢幕模式">
+                ⛶ <span class="label-text">全螢幕</span>
+            </button>
+            <button class="btn btn-sm" id="btnTheme" title="切換深色／淺色主題">
+                🌓 <span class="label-text">主題</span>
+            </button>
+            <span class="divider"></span>
+            <button class="btn btn-sm" id="btnImport" title="匯入文字檔">📥 匯入</button>
+            <button class="btn btn-sm" id="btnExport" title="匯出文字檔">📤 匯出</button>
+            <button class="btn btn-sm danger" id="btnClear" title="清除所有文字">🗑️ 清除</button>
+        </div>
+    </header>
+
+    <!-- ==================== 主佈局 ==================== -->
+    <div class="main-container" id="mainContainer">
+
+        <!-- 提詞顯示區 -->
+        <section class="display-section" id="displaySection">
+            <div class="display-viewport" id="displayViewport" title="點擊播放／暫停 | 滾輪微調速度">
+                <div class="guide-line" id="guideLine"></div>
+                <div class="text-scroller" id="textScroller"></div>
+                <div class="empty-state" id="emptyState">
+                    <span class="icon-large">📝</span>
+                    <p>請輸入或貼上您的文稿</p>
+                    <p style="font-size:0.8rem;opacity:0.6;">點擊右側編輯區開始，或匯入文字檔</p>
+                </div>
+            </div>
+
+            <!-- 底部控制列 -->
+            <div class="control-bar" id="controlBar">
+                <button class="btn btn-icon" id="btnPlay" title="播放／暫停（空白鍵）">▶️</button>
+                <button class="btn btn-icon" id="btnStop" title="停止並重置">⏹️</button>
+
+                <span class="divider"></span>
+
+                <div class="speed-group">
+                    <span class="speed-label">速度</span>
+                    <button class="preset-btn" data-speed="30">慢</button>
+                    <button class="preset-btn active-preset" data-speed="55">中</button>
+                    <button class="preset-btn" data-speed="90">快</button>
+                    <input type="range" class="speed-slider" id="speedSlider" min="15" max="180" value="55" step="1" title="拖曳調節速度">
+                    <span class="speed-value" id="speedValue">55</span>
+                </div>
+
+                <span class="divider"></span>
+
+                <span class="speed-label">字型</span>
+                <button class="btn btn-sm" id="btnFontDown" title="縮小字型">A-</button>
+                <button class="btn btn-sm" id="btnFontUp" title="放大字型">A+</button>
+                <span class="speed-value" id="fontSizeValue" style="min-width:35px;">28px</span>
+
+                <span class="divider"></span>
+
+                <span class="timer-display" id="timerDisplay">00:00</span>
+                <span style="font-size:0.72rem;color:var(--text-secondary);">/</span>
+                <span class="timer-display" id="estTimeDisplay" style="color:var(--text-secondary);">--:--</span>
+
+                <!-- 語音控制按鈕與面板 -->
+                <span class="divider"></span>
+                <button class="btn btn-sm" id="btnVoiceToggle" title="展開語音設定">🔊 <span id="voiceStatusLabel">語音</span></button>
+                <div class="voice-panel" id="voicePanel">
+                    <select class="voice-select" id="voiceSelect"></select>
+                    <div class="voice-controls-group">
+                        <span class="voice-label">語速</span>
+                        <input type="range" class="voice-slider" id="voiceRateSlider" min="0.5" max="2.0" value="1.0" step="0.1">
+                        <span class="voice-value" id="voiceRateValue">1.0</span>
+                    </div>
+                    <div class="voice-controls-group">
+                        <span class="voice-label">語調</span>
+                        <input type="range" class="voice-slider" id="voicePitchSlider" min="0.5" max="2.0" value="1.0" step="0.1">
+                        <span class="voice-value" id="voicePitchValue">1.0</span>
+                    </div>
+                    <button class="btn btn-sm" id="btnVoicePlay" title="朗讀文稿">▶️ 朗讀</button>
+                    <button class="btn btn-sm" id="btnVoicePause" title="暫停／繼續">⏯️</button>
+                    <button class="btn btn-sm" id="btnVoiceStop" title="停止朗讀">⏹️</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 編輯面板 -->
+        <aside class="editor-panel" id="editorPanel">
+            <div class="editor-handle" id="editorHandle" title="拖曳以展開／收合編輯區"></div>
+            <div class="editor-header">
+                <h3>📝 文稿編輯區</h3>
+                <button class="btn btn-sm" id="btnPanelClose" title="收合面板">✕</button>
+            </div>
+            <textarea class="editor-textarea" id="editorTextarea" placeholder="在此輸入或貼上您的演講文稿…&#10;&#10;💡 提示：&#10;• 每換一行即為新段落&#10;• 點擊提詞顯示區即可播放&#10;• 使用空白鍵快速控制播放／暫停&#10;• 滾動滑鼠滾輪可微調速度&#10;• 開啟鏡面模式搭配反射鏡使用&#10;• 點擊下方🔊展開語音設定"></textarea>
+            <div class="editor-stats">
+                <span>📊 字數：<span class="stat-value" id="charCount">0</span></span>
+                <span>⏱️ 預估時間：<span class="stat-value" id="estTime">0:00</span></span>
+                <span>📄 段落：<span class="stat-value" id="paraCount">0</span></span>
+                <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;" id="saveIndicator">● 已自動儲存</span>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 全螢幕覆蓋層 -->
+    <div class="fullscreen-overlay" id="fullscreenOverlay">
+        <button class="fs-close" id="fsClose">✕ 離開全螢幕 (Esc)</button>
+        <div class="fs-display" id="fsDisplay">
+            <div class="fs-guide"></div>
+            <div class="fs-scroller" id="fsScroller"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <input type="file" id="fileInput" accept=".txt,.md,.text" style="display:none;">
+
+    <script>
+        (function() {
+            // DOM 元素
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            const displayViewport = $('#displayViewport');
+            const textScroller = $('#textScroller');
+            const guideLine = $('#guideLine');
+            const emptyState = $('#emptyState');
+            const editorTextarea = $('#editorTextarea');
+            const editorPanel = $('#editorPanel');
+            const editorHandle = $('#editorHandle');
+            const speedSlider = $('#speedSlider');
+            const speedValue = $('#speedValue');
+            const fontSizeValue = $('#fontSizeValue');
+            const timerDisplay = $('#timerDisplay');
+            const estTimeDisplay = $('#estTimeDisplay');
+            const charCount = $('#charCount');
+            const estTime = $('#estTime');
+            const paraCount = $('#paraCount');
+            const saveIndicator = $('#saveIndicator');
+            const btnPlay = $('#btnPlay');
+            const btnStop = $('#btnStop');
+            const btnMirror = $('#btnMirror');
+            const btnFullscreen = $('#btnFullscreen');
+            const btnTheme = $('#btnTheme');
+            const btnEdit = $('#btnEdit');
+            const btnPanelClose = $('#btnPanelClose');
+            const btnImport = $('#btnImport');
+            const btnExport = $('#btnExport');
+            const btnClear = $('#btnClear');
+            const btnFontUp = $('#btnFontUp');
+            const btnFontDown = $('#btnFontDown');
+            const fullscreenOverlay = $('#fullscreenOverlay');
+            const fsDisplay = $('#fsDisplay');
+            const fsScroller = $('#fsScroller');
+            const fsClose = $('#fsClose');
+            const fileInput = $('#fileInput');
+            const toast = $('#toast');
+            const presetBtns = $$('.preset-btn');
+
+            // 語音相關元素
+            const btnVoiceToggle = $('#btnVoiceToggle');
+            const voicePanel = $('#voicePanel');
+            const voiceSelect = $('#voiceSelect');
+            const voiceRateSlider = $('#voiceRateSlider');
+            const voiceRateValue = $('#voiceRateValue');
+            const voicePitchSlider = $('#voicePitchSlider');
+            const voicePitchValue = $('#voicePitchValue');
+            const btnVoicePlay = $('#btnVoicePlay');
+            const btnVoicePause = $('#btnVoicePause');
+            const btnVoiceStop = $('#btnVoiceStop');
+            const voiceStatusLabel = $('#voiceStatusLabel');
+
+            // 狀態
+            const STATE_KEY = 'teleprompter_state_v3';
+            let state = {
+                text: '',
+                speed: 55,
+                fontSize: 28,
+                isPlaying: false,
+                isMirrorMode: false,
+                scrollOffset: 0,
+                theme: 'dark',
+                editorVisible: true,
+                elapsedSeconds: 0,
+                // 語音設置
+                voiceURI: '',
+                voiceRate: 1.0,
+                voicePitch: 1.0,
+                voicePanelVisible: false,
+            };
+
+            let animFrameId = null;
+            let lastTimestamp = null;
+            let currentSpeed = 0;
+            let targetSpeed = 0;
+            const SPEED_EASING = 0.12;
+
+            let timerInterval = null;
+            let timerStartTs = null;
+            let timerAccumulated = 0;
+
+            let toastTimeout = null;
+            let isDraggingPanel = false;
+            let dragStartY = 0;
+            let dragStartTransform = 0;
+            let panelTransformOffset = 0;
+
+            // 語音合成相關
+            let speechSynth = window.speechSynthesis;
+            let currentUtterance = null;
+            let voiceSpeaking = false;
+            let voicePaused = false;
+
+            // ==================== 初始化 ====================
+            function init() {
+                loadState();
+                applyTheme();
+                updateEditorUI();
+                renderTextToScroller();
+                updateSpeedUI();
+                updateFontSizeUI();
+                updateStats();
+                updateTimerDisplay();
+                updatePlayButton();
+                updateMirrorButton();
+                updateEmptyState();
+                initVoices();
+                updateVoiceUI();
+                bindEvents();
+                if (window.innerWidth <= 768) {
+                    editorPanel.classList.add('mobile-hidden');
+                    state.editorVisible = false;
+                }
+                syncFullscreenContent();
+                if (state.voicePanelVisible) {
+                    voicePanel.classList.add('visible');
+                }
+                // 監聽語音列表變化
+                if (speechSynth) {
+                    speechSynth.addEventListener('voiceschanged', () => {
+                        populateVoiceList();
+                    });
+                }
+            }
+
+            function loadState() {
+                try {
+                    const saved = localStorage.getItem(STATE_KEY);
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        state = { ...state, ...parsed };
+                        state.speed = Math.max(15, Math.min(180, state.speed || 55));
+                        state.fontSize = Math.max(14, Math.min(72, state.fontSize || 28));
+                        state.scrollOffset = Math.max(0, state.scrollOffset || 0);
+                        state.elapsedSeconds = Math.max(0, state.elapsedSeconds || 0);
+                        state.voiceRate = parseFloat(state.voiceRate) || 1.0;
+                        state.voicePitch = parseFloat(state.voicePitch) || 1.0;
+                        timerAccumulated = state.elapsedSeconds;
+                    }
+                } catch (e) {}
+                editorTextarea.value = state.text || '';
+                speedSlider.value = state.speed;
+                voiceRateSlider.value = state.voiceRate;
+                voicePitchSlider.value = state.voicePitch;
+            }
+
+            function saveState() {
+                state.text = editorTextarea.value;
+                state.elapsedSeconds = timerAccumulated;
+                try {
+                    localStorage.setItem(STATE_KEY, JSON.stringify(state));
+                    showSaveIndicator();
+                } catch (e) {
+                    showToast('⚠️ 自動儲存失敗，請檢查瀏覽器儲存空間');
+                }
+            }
+
+            function showSaveIndicator() {
+                saveIndicator.textContent = '● 已自動儲存';
+                saveIndicator.style.opacity = '1';
+                clearTimeout(window._saveIndicatorTimeout);
+                window._saveIndicatorTimeout = setTimeout(() => {
+                    saveIndicator.style.opacity = '0.5';
+                    saveIndicator.textContent = '○ 已儲存';
+                }, 1500);
+            }
+
+            function applyTheme() {
+                document.documentElement.setAttribute('data-theme', state.theme);
+                if (state.theme === 'dark') {
+                    btnTheme.innerHTML = '🌙 <span class="label-text">深色</span>';
+                } else {
+                    btnTheme.innerHTML = '☀️ <span class="label-text">淺色</span>';
+                }
+            }
+
+            function toggleTheme() {
+                state.theme = state.theme === 'dark' ? 'light' : 'dark';
+                applyTheme();
+                saveState();
+                showToast(state.theme === 'dark' ? '🌙 已切換為深色模式' : '☀️ 已切換為淺色模式');
+            }
+
+            // ==================== 文字渲染 ====================
+            function renderTextToScroller() {
+                const text = editorTextarea.value.trim();
+                const paragraphs = text.split('\n').filter(p => p.length > 0 || text.includes('\n\n'));
+                let html = '';
+                if (paragraphs.length === 0) {
+                    html = '<div class="paragraph" style="height:2em;"></div>';
+                } else {
+                    paragraphs.forEach(p => {
+                        const trimmed = p.trim();
+                        if (trimmed.length === 0) {
+                            html += '<div class="paragraph" style="height:0.8em;"></div>';
+                        } else {
+                            html += `<div class="paragraph">${escapeHTML(trimmed)}</div>`;
+                        }
+                    });
+                }
+                html += '<div style="height:60vh;"></div>';
+                textScroller.innerHTML = html;
+                textScroller.style.fontSize = state.fontSize + 'px';
+                syncFullscreenContent();
+                applyScrollOffset();
+            }
+
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function syncFullscreenContent() {
+                fsScroller.innerHTML = textScroller.innerHTML;
+                fsScroller.style.fontSize = Math.round(state.fontSize * 1.3) + 'px';
+            }
+
+            function applyScrollOffset() {
+                const offset = state.scrollOffset;
+                textScroller.style.transform = `translateY(${-offset}px)`;
+                fsScroller.style.transform = `translateY(${-offset}px)`;
+            }
+
+            function updateEmptyState() {
+                const hasText = editorTextarea.value.trim().length > 0;
+                emptyState.style.opacity = hasText ? '0' : '1';
+                emptyState.style.pointerEvents = hasText ? 'none' : 'auto';
+                if (!hasText) {
+                    textScroller.style.transform = 'translateY(0px)';
+                    fsScroller.style.transform = 'translateY(0px)';
+                    state.scrollOffset = 0;
+                }
+            }
+
+            // ==================== 滾動引擎 ====================
+            function startScrolling() {
+                if (animFrameId) return;
+                state.isPlaying = true;
+                targetSpeed = state.speed;
+                if (currentSpeed < 0.5) currentSpeed = targetSpeed * 0.3;
+                lastTimestamp = null;
+                updatePlayButton();
+                startTimer();
+                btnPlay.classList.add('playing-indicator');
+                animFrameId = requestAnimationFrame(scrollLoop);
+                showToast('▶️ 開始播放');
+            }
+
+            function pauseScrolling() {
+                state.isPlaying = false;
+                targetSpeed = 0;
+                updatePlayButton();
+                stopTimer();
+                btnPlay.classList.remove('playing-indicator');
+                showToast('⏸️ 已暫停');
+            }
+
+            function stopScrolling() {
+                state.isPlaying = false;
+                targetSpeed = 0;
+                currentSpeed = 0;
+                state.scrollOffset = 0;
+                if (animFrameId) {
+                    cancelAnimationFrame(animFrameId);
+                    animFrameId = null;
+                }
+                lastTimestamp = null;
+                applyScrollOffset();
+                updatePlayButton();
+                stopTimer();
+                resetTimer();
+                btnPlay.classList.remove('playing-indicator');
+                updateEmptyState();
+                renderTextToScroller();
+                showToast('⏹️ 已停止並重置');
+            }
+
+            function scrollLoop(timestamp) {
+                if (!lastTimestamp) lastTimestamp = timestamp;
+                const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
+                lastTimestamp = timestamp;
+                if (Math.abs(currentSpeed - targetSpeed) < 0.3) {
+                    currentSpeed = targetSpeed;
+                } else {
+                    currentSpeed += (targetSpeed - currentSpeed) * SPEED_EASING;
+                }
+                if (currentSpeed > 0.05) {
+                    state.scrollOffset += currentSpeed * dt;
+                    applyScrollOffset();
+                }
+                const scrollerHeight = textScroller.scrollHeight;
+                const viewportHeight = displayViewport.clientHeight;
+                const maxOffset = Math.max(0, scrollerHeight - viewportHeight * 0.3);
+                if (state.scrollOffset >= maxOffset && currentSpeed > 0.5 && scrollerHeight > viewportHeight) {
+                    state.scrollOffset = maxOffset;
+                    applyScrollOffset();
+                    pauseScrolling();
+                    showToast('🏁 已到達文稿尾端');
+                }
+                if (!state.isPlaying && currentSpeed < 0.3) {
+                    currentSpeed = 0;
+                    cancelAnimationFrame(animFrameId);
+                    animFrameId = null;
+                    lastTimestamp = null;
+                    saveState();
+                    return;
+                }
+                animFrameId = requestAnimationFrame(scrollLoop);
+            }
+
+            // ==================== 計時器 ====================
+            function startTimer() {
+                if (timerInterval) return;
+                timerStartTs = Date.now();
+                timerInterval = setInterval(updateTimerFromAccumulated, 200);
+            }
+
+            function stopTimer() {
+                if (timerInterval) {
+                    if (timerStartTs) {
+                        timerAccumulated += (Date.now() - timerStartTs) / 1000;
+                    }
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerStartTs = null;
+                }
+                updateTimerDisplay();
+                saveState();
+            }
+
+            function resetTimer() {
+                stopTimer();
+                timerAccumulated = 0;
+                timerStartTs = null;
+                updateTimerDisplay();
+                saveState();
+            }
+
+            function updateTimerFromAccumulated() {
+                let total = timerAccumulated;
+                if (timerStartTs && state.isPlaying) {
+                    total += (Date.now() - timerStartTs) / 1000;
+                }
+                const secs = Math.floor(total);
+                const mins = Math.floor(secs / 60);
+                const remainSecs = secs % 60;
+                timerDisplay.textContent = String(mins).padStart(2, '0') + ':' + String(remainSecs).padStart(2, '0');
+            }
+
+            function updateTimerDisplay() {
+                updateTimerFromAccumulated();
+            }
+
+            // ==================== UI 更新 ====================
+            function updatePlayButton() {
+                btnPlay.innerHTML = state.isPlaying ? '⏸️' : '▶️';
+                btnPlay.title = state.isPlaying ? '暫停（空白鍵）' : '播放（空白鍵）';
+            }
+
+            function updateMirrorButton() {
+                if (state.isMirrorMode) {
+                    btnMirror.classList.add('active');
+                    btnMirror.innerHTML = '🔄 <span class="label-text">鏡面開</span>';
+                } else {
+                    btnMirror.classList.remove('active');
+                    btnMirror.innerHTML = '🔄 <span class="label-text">鏡面</span>';
+                }
+            }
+
+            function updateSpeedUI() {
+                speedSlider.value = state.speed;
+                speedValue.textContent = state.speed;
+                targetSpeed = state.isPlaying ? state.speed : 0;
+                presetBtns.forEach(btn => {
+                    const btnSpeed = parseInt(btn.dataset.speed);
+                    btn.classList.toggle('active-preset', btnSpeed === state.speed);
+                });
+            }
+
+            function updateFontSizeUI() {
+                fontSizeValue.textContent = state.fontSize + 'px';
+                textScroller.style.fontSize = state.fontSize + 'px';
+                syncFullscreenContent();
+            }
+
+            function updateEditorUI() {
+                if (state.editorVisible) {
+                    editorPanel.classList.remove('collapsed');
+                    if (window.innerWidth <= 768) {
+                        editorPanel.classList.remove('mobile-hidden');
+                    }
+                    btnEdit.classList.add('active');
+                } else {
+                    if (window.innerWidth <= 768) {
+                        editorPanel.classList.add('mobile-hidden');
+                    } else {
+                        editorPanel.classList.add('collapsed');
+                    }
+                    btnEdit.classList.remove('active');
+                }
+            }
+
+            function updateStats() {
+                const text = editorTextarea.value;
+                const charCountNum = text.replace(/\s/g, '').length;
+                const paragraphs = text.split('\n').filter(p => p.trim().length > 0);
+                const wordsPerMinute = 250;
+                const totalMinutes = charCountNum / wordsPerMinute;
+                const estMinutes = Math.floor(totalMinutes);
+                const estSeconds = Math.round((totalMinutes - estMinutes) * 60);
+                charCount.textContent = charCountNum.toLocaleString();
+                paraCount.textContent = paragraphs.length;
+                estTime.textContent = estMinutes + ':' + String(estSeconds).padStart(2, '0');
+                estTimeDisplay.textContent = estMinutes + ':' + String(estSeconds).padStart(2, '0');
+            }
+
+            // ==================== 語音功能 ====================
+            function initVoices() {
+                populateVoiceList();
+                if (!speechSynth) {
+                    btnVoiceToggle.style.display = 'none';
+                    voicePanel.style.display = 'none';
+                    return;
+                }
+                // 嘗試恢復上次選擇的語音
+                if (state.voiceURI) {
+                    voiceSelect.value = state.voiceURI;
+                }
+            }
+
+            function populateVoiceList() {
+                if (!speechSynth) return;
+                const voices = speechSynth.getVoices();
+                voiceSelect.innerHTML = '';
+                if (voices.length === 0) {
+                    voiceSelect.innerHTML = '<option value="">無可用語音</option>';
+                    return;
+                }
+                // 優先顯示中文語音
+                const zhVoices = voices.filter(v => v.lang.startsWith('zh'));
+                const otherVoices = voices.filter(v => !v.lang.startsWith('zh'));
+                const sorted = [...zhVoices, ...otherVoices];
+                sorted.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.voiceURI;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                });
+                if (state.voiceURI && voiceSelect.querySelector(`option[value="${state.voiceURI}"]`)) {
+                    voiceSelect.value = state.voiceURI;
+                } else if (zhVoices.length > 0) {
+                    voiceSelect.value = zhVoices[0].voiceURI;
+                    state.voiceURI = zhVoices[0].voiceURI;
+                    saveState();
+                }
+            }
+
+            function updateVoiceUI() {
+                voiceRateSlider.value = state.voiceRate;
+                voicePitchSlider.value = state.voicePitch;
+                voiceRateValue.textContent = state.voiceRate.toFixed(1);
+                voicePitchValue.textContent = state.voicePitch.toFixed(1);
+                updateVoiceStatusLabel();
+            }
+
+            function updateVoiceStatusLabel() {
+                if (voiceSpeaking && !voicePaused) {
+                    voiceStatusLabel.textContent = '播放中';
+                    btnVoiceToggle.classList.add('voice-active');
+                    btnVoiceToggle.classList.remove('voice-pause');
+                } else if (voiceSpeaking && voicePaused) {
+                    voiceStatusLabel.textContent = '已暫停';
+                    btnVoiceToggle.classList.add('voice-pause');
+                    btnVoiceToggle.classList.remove('voice-active');
+                } else {
+                    voiceStatusLabel.textContent = '語音';
+                    btnVoiceToggle.classList.remove('voice-active', 'voice-pause');
+                }
+            }
+
+            function speakText() {
+                if (!speechSynth) {
+                    showToast('❌ 您的瀏覽器不支援語音合成');
+                    return;
+                }
+                const text = editorTextarea.value.trim();
+                if (!text) {
+                    showToast('⚠️ 請先輸入文稿內容');
+                    return;
+                }
+                // 如果已有朗讀在進行，先取消
+                if (voiceSpeaking) {
+                    speechSynth.cancel();
+                }
+                const utterance = new SpeechSynthesisUtterance(text);
+                const selectedVoiceURI = voiceSelect.value;
+                const voices = speechSynth.getVoices();
+                const voice = voices.find(v => v.voiceURI === selectedVoiceURI);
+                if (voice) utterance.voice = voice;
+                utterance.rate = state.voiceRate;
+                utterance.pitch = state.voicePitch;
+                utterance.onstart = () => {
+                    voiceSpeaking = true;
+                    voicePaused = false;
+                    updateVoiceStatusLabel();
+                    updateVoiceButtons();
+                };
+                utterance.onpause = () => {
+                    voicePaused = true;
+                    updateVoiceStatusLabel();
+                    updateVoiceButtons();
+                };
+                utterance.onresume = () => {
+                    voicePaused = false;
+                    updateVoiceStatusLabel();
+                    updateVoiceButtons();
+                };
+                utterance.onend = () => {
+                    voiceSpeaking = false;
+                    voicePaused = false;
+                    updateVoiceStatusLabel();
+                    updateVoiceButtons();
+                    currentUtterance = null;
+                };
+                utterance.onerror = (e) => {
+                    if (e.error !== 'canceled' && e.error !== 'interrupted') {
+                        showToast('❌ 語音播放錯誤：' + e.error);
+                    }
+                    voiceSpeaking = false;
+                    voicePaused = false;
+                    updateVoiceStatusLabel();
+                    updateVoiceButtons();
+                    currentUtterance = null;
+                };
+                currentUtterance = utterance;
+                speechSynth.speak(utterance);
+                showToast('🔊 開始朗讀文稿');
+            }
+
+            function pauseVoice() {
+                if (speechSynth && voiceSpeaking && !voicePaused) {
+                    speechSynth.pause();
+                }
+            }
+
+            function resumeVoice() {
+                if (speechSynth && voiceSpeaking && voicePaused) {
+                    speechSynth.resume();
+                }
+            }
+
+            function stopVoice() {
+                if (speechSynth) {
+                    speechSynth.cancel();
+                    voiceSpeaking = false;
+                    voicePaused = false;
+                    currentUtterance = null;
+                    updateVoiceStatusLabel();
+                    updateVoiceButtons();
+                    showToast('⏹️ 語音已停止');
+                }
+            }
+
+            function updateVoiceButtons() {
+                if (voiceSpeaking && !voicePaused) {
+                    btnVoicePlay.style.display = 'none';
+                    btnVoicePause.style.display = 'inline-flex';
+                    btnVoicePause.innerHTML = '⏸️ 暫停';
+                } else if (voiceSpeaking && voicePaused) {
+                    btnVoicePlay.style.display = 'none';
+                    btnVoicePause.style.display = 'inline-flex';
+                    btnVoicePause.innerHTML = '▶️ 繼續';
+                } else {
+                    btnVoicePlay.style.display = 'inline-flex';
+                    btnVoicePause.style.display = 'none';
+                }
+            }
+
+            // ==================== 事件綁定 ====================
+            function bindEvents() {
+                // 播放控制
+                btnPlay.addEventListener('click', () => {
+                    if (state.isPlaying) pauseScrolling();
+                    else if (editorTextarea.value.trim().length > 0) startScrolling();
+                });
+                btnStop.addEventListener('click', stopScrolling);
+                displayViewport.addEventListener('click', (e) => {
+                    if (e.target.closest('.guide-line') && e.target === guideLine) return;
+                    if (state.isPlaying) pauseScrolling();
+                    else if (editorTextarea.value.trim().length > 0) startScrolling();
+                });
+                displayViewport.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? -3 : 3;
+                    state.speed = Math.max(15, Math.min(180, state.speed + delta));
+                    if (state.isPlaying) targetSpeed = state.speed;
+                    updateSpeedUI();
+                    saveState();
+                }, { passive: false });
+
+                speedSlider.addEventListener('input', () => {
+                    state.speed = parseInt(speedSlider.value);
+                    if (state.isPlaying) targetSpeed = state.speed;
+                    updateSpeedUI();
+                    saveState();
+                });
+                presetBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        state.speed = parseInt(btn.dataset.speed);
+                        if (state.isPlaying) targetSpeed = state.speed;
+                        updateSpeedUI();
+                        saveState();
+                    });
+                });
+
+                btnFontUp.addEventListener('click', () => {
+                    state.fontSize = Math.min(72, state.fontSize + 2);
+                    updateFontSizeUI();
+                    renderTextToScroller();
+                    if (state.scrollOffset > 0) applyScrollOffset();
+                    saveState();
+                });
+                btnFontDown.addEventListener('click', () => {
+                    state.fontSize = Math.max(14, state.fontSize - 2);
+                    updateFontSizeUI();
+                    renderTextToScroller();
+                    if (state.scrollOffset > 0) applyScrollOffset();
+                    saveState();
+                });
+
+                btnMirror.addEventListener('click', () => {
+                    state.isMirrorMode = !state.isMirrorMode;
+                    displayViewport.classList.toggle('mirror-mode', state.isMirrorMode);
+                    updateMirrorButton();
+                    saveState();
+                    showToast(state.isMirrorMode ? '🪞 鏡面模式已開啟' : '🔄 鏡面模式已關閉');
+                });
+
+                btnFullscreen.addEventListener('click', toggleFullscreen);
+                fsClose.addEventListener('click', exitFullscreen);
+                fsDisplay.addEventListener('click', (e) => {
+                    if (e.target === fsDisplay || e.target.closest('.fs-scroller')) {
+                        if (state.isPlaying) pauseScrolling();
+                        else if (editorTextarea.value.trim().length > 0) startScrolling();
+                    }
+                });
+                fsDisplay.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? -3 : 3;
+                    state.speed = Math.max(15, Math.min(180, state.speed + delta));
+                    if (state.isPlaying) targetSpeed = state.speed;
+                    updateSpeedUI();
+                    saveState();
+                }, { passive: false });
+
+                btnTheme.addEventListener('click', toggleTheme);
+                btnEdit.addEventListener('click', toggleEditorPanel);
+                btnPanelClose.addEventListener('click', () => {
+                    state.editorVisible = false;
+                    updateEditorUI();
+                    saveState();
+                });
+
+                if (editorHandle) {
+                    editorHandle.addEventListener('pointerdown', onPanelDragStart);
+                    document.addEventListener('pointermove', onPanelDragMove);
+                    document.addEventListener('pointerup', onPanelDragEnd);
+                    document.addEventListener('pointercancel', onPanelDragEnd);
+                }
+
+                editorTextarea.addEventListener('input', () => {
+                    state.text = editorTextarea.value;
+                    renderTextToScroller();
+                    updateStats();
+                    updateEmptyState();
+                    clearTimeout(window._saveDebounce);
+                    window._saveDebounce = setTimeout(saveState, 600);
+                    if (!state.isPlaying) {
+                        state.scrollOffset = 0;
+                        applyScrollOffset();
+                    }
+                });
+
+                btnImport.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', handleFileImport);
+                btnExport.addEventListener('click', handleFileExport);
+                btnClear.addEventListener('click', () => {
+                    if (editorTextarea.value.trim().length === 0) return;
+                    if (confirm('確定要清除所有文稿內容嗎？')) {
+                        stopScrolling();
+                        stopVoice();
+                        editorTextarea.value = '';
+                        state.text = '';
+                        state.scrollOffset = 0;
+                        renderTextToScroller();
+                        updateStats();
+                        updateEmptyState();
+                        applyScrollOffset();
+                        resetTimer();
+                        saveState();
+                        showToast('🗑️ 文稿已清除');
+                    }
+                });
+
+                document.addEventListener('keydown', handleKeyboard);
+                window.addEventListener('resize', () => {
+                    updateEditorUI();
+                    const scrollerHeight = textScroller.scrollHeight;
+                    const viewportHeight = displayViewport.clientHeight;
+                    const maxOffset = Math.max(0, scrollerHeight - viewportHeight * 0.3);
+                    if (state.scrollOffset > maxOffset) {
+                        state.scrollOffset = maxOffset;
+                        applyScrollOffset();
+                    }
+                });
+                document.addEventListener('fullscreenchange', onFullscreenChange);
+                document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+                window.addEventListener('beforeunload', () => {
+                    stopTimer();
+                    stopVoice();
+                    saveState();
+                });
+
+                // 語音控制事件
+                btnVoiceToggle.addEventListener('click', () => {
+                    state.voicePanelVisible = !state.voicePanelVisible;
+                    voicePanel.classList.toggle('visible', state.voicePanelVisible);
+                    saveState();
+                });
+                voiceSelect.addEventListener('change', () => {
+                    state.voiceURI = voiceSelect.value;
+                    saveState();
+                    // 如果正在朗讀，更換語音需要重新開始
+                    if (voiceSpeaking) {
+                        stopVoice();
+                        showToast('🔄 語音角色已變更，請重新朗讀');
+                    }
+                });
+                voiceRateSlider.addEventListener('input', () => {
+                    state.voiceRate = parseFloat(voiceRateSlider.value);
+                    voiceRateValue.textContent = state.voiceRate.toFixed(1);
+                    if (currentUtterance && voiceSpeaking) {
+                        currentUtterance.rate = state.voiceRate;
+                    }
+                    saveState();
+                });
+                voicePitchSlider.addEventListener('input', () => {
+                    state.voicePitch = parseFloat(voicePitchSlider.value);
+                    voicePitchValue.textContent = state.voicePitch.toFixed(1);
+                    if (currentUtterance && voiceSpeaking) {
+                        currentUtterance.pitch = state.voicePitch;
+                    }
+                    saveState();
+                });
+                btnVoicePlay.addEventListener('click', speakText);
+                btnVoicePause.addEventListener('click', () => {
+                    if (voiceSpeaking && !voicePaused) {
+                        pauseVoice();
+                    } else if (voiceSpeaking && voicePaused) {
+                        resumeVoice();
+                    }
+                });
+                btnVoiceStop.addEventListener('click', stopVoice);
+
+                // 行動版觸控調速
+                let touchStartY = 0;
+                let touchStartSpeed = 0;
+                displayViewport.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 2) {
+                        touchStartY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                        touchStartSpeed = state.speed;
+                    }
+                }, { passive: true });
+                displayViewport.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2) {
+                        const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                        const deltaY = touchStartY - currentY;
+                        state.speed = Math.max(15, Math.min(180, touchStartSpeed + Math.round(deltaY / 3)));
+                        if (state.isPlaying) targetSpeed = state.speed;
+                        updateSpeedUI();
+                    }
+                }, { passive: true });
+            }
+
+            // 全螢幕相關
+            function toggleFullscreen() {
+                if (fullscreenOverlay.classList.contains('active')) {
+                    exitFullscreen();
+                    return;
+                }
+                const el = fullscreenOverlay;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen().catch(() => fallbackFullscreen());
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                } else {
+                    fallbackFullscreen();
+                }
+            }
+
+            function fallbackFullscreen() {
+                syncFullscreenContent();
+                fullscreenOverlay.classList.add('active');
+            }
+
+            function exitFullscreen() {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(() => {});
+                } else if (document.webkitFullscreenElement) {
+                    document.webkitExitFullscreen();
+                }
+                fullscreenOverlay.classList.remove('active');
+            }
+
+            function onFullscreenChange() {
+                const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
+                if (isFS) {
+                    syncFullscreenContent();
+                    fullscreenOverlay.classList.add('active');
+                } else {
+                    fullscreenOverlay.classList.remove('active');
+                }
+            }
+
+            // 編輯面板拖曳
+            function toggleEditorPanel() {
+                state.editorVisible = !state.editorVisible;
+                updateEditorUI();
+                saveState();
+            }
+
+            function onPanelDragStart(e) {
+                if (window.innerWidth > 768) return;
+                isDraggingPanel = true;
+                dragStartY = e.clientY;
+                dragStartTransform = getPanelTranslateY();
+                editorPanel.style.transition = 'none';
+                editorPanel.setPointerCapture(e.pointerId);
+            }
+
+            function onPanelDragMove(e) {
+                if (!isDraggingPanel) return;
+                const deltaY = e.clientY - dragStartY;
+                const newTransform = Math.max(0, dragStartTransform + deltaY);
+                const maxTransform = editorPanel.offsetHeight - 60;
+                panelTransformOffset = Math.min(newTransform, maxTransform);
+                editorPanel.style.transform = `translateY(${panelTransformOffset}px)`;
+            }
+
+            function onPanelDragEnd(e) {
+                if (!isDraggingPanel) return;
+                isDraggingPanel = false;
+                editorPanel.style.transition = '';
+                const threshold = editorPanel.offsetHeight * 0.3;
+                if (panelTransformOffset > threshold) {
+                    state.editorVisible = false;
+                    updateEditorUI();
+                } else {
+                    state.editorVisible = true;
+                    editorPanel.style.transform = 'translateY(0px)';
+                    panelTransformOffset = 0;
+                    updateEditorUI();
+                }
+                saveState();
+                setTimeout(() => { editorPanel.style.transform = ''; }, 50);
+            }
+
+            function getPanelTranslateY() {
+                const style = window.getComputedStyle(editorPanel);
+                const matrix = new DOMMatrixReadOnly(style.transform);
+                return matrix.m42 || 0;
+            }
+
+            // 檔案匯入匯出
+            function handleFileImport(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    editorTextarea.value = ev.target.result;
+                    state.text = ev.target.result;
+                    state.scrollOffset = 0;
+                    renderTextToScroller();
+                    updateStats();
+                    updateEmptyState();
+                    applyScrollOffset();
+                    resetTimer();
+                    saveState();
+                    showToast(`📥 已匯入：${file.name}（${(ev.target.result.length / 1024).toFixed(1)} KB）`);
+                };
+                reader.onerror = () => showToast('❌ 檔案讀取失敗');
+                reader.readAsText(file, 'UTF-8');
+                fileInput.value = '';
+            }
+
+            function handleFileExport() {
+                const text = editorTextarea.value;
+                if (text.trim().length === 0) {
+                    showToast('⚠️ 沒有內容可匯出');
+                    return;
+                }
+                const blob = new Blob([text], { type: 'text/plain;charset=UTF-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `提詞文稿_${new Date().toISOString().slice(0,10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('📤 文稿已匯出');
+            }
+
+            // 鍵盤快速鍵
+            function handleKeyboard(e) {
+                const isEditing = document.activeElement === editorTextarea;
+                const key = e.key.toLowerCase();
+                switch (key) {
+                    case ' ':
+                        if (!isEditing || e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            if (state.isPlaying) pauseScrolling();
+                            else if (editorTextarea.value.trim().length > 0) startScrolling();
+                        }
+                        break;
+                    case 'escape':
+                        e.preventDefault();
+                        if (fullscreenOverlay.classList.contains('active') || document.fullscreenElement) {
+                            exitFullscreen();
+                        } else if (state.isPlaying) {
+                            stopScrolling();
+                        } else if (state.editorVisible && window.innerWidth <= 768) {
+                            state.editorVisible = false;
+                            updateEditorUI();
+                            saveState();
+                        }
+                        break;
+                    case 'f': if (!isEditing && !e.ctrlKey && !e.metaKey) { e.preventDefault();
+                        toggleFullscreen(); } break;
+                    case 'm': if (!isEditing && !e.ctrlKey && !e.metaKey) { e.preventDefault();
+                        state.isMirrorMode = !state.isMirrorMode;
+                        displayViewport.classList.toggle('mirror-mode', state.isMirrorMode);
+                        updateMirrorButton();
+                        saveState(); } break;
+                    case 'r': if (!isEditing && !e.ctrlKey && !e.metaKey && !state.isPlaying) { e.preventDefault();
+                        stopScrolling(); } break;
+                    case 'arrowup': if (!isEditing) { e.preventDefault();
+                        state.speed = Math.min(180, state.speed + 5); if (state.isPlaying) targetSpeed = state.speed;
+                        updateSpeedUI();
+                        saveState(); } break;
+                    case 'arrowdown': if (!isEditing) { e.preventDefault();
+                        state.speed = Math.max(15, state.speed - 5); if (state.isPlaying) targetSpeed = state.speed;
+                        updateSpeedUI();
+                        saveState(); } break;
+                    case '+': case '=': if (!isEditing) { e.preventDefault();
+                        state.fontSize = Math.min(72, state.fontSize + 2);
+                        updateFontSizeUI();
+                        renderTextToScroller(); if (state.scrollOffset > 0) applyScrollOffset();
+                        saveState(); } break;
+                    case '-': if (!isEditing) { e.preventDefault();
+                        state.fontSize = Math.max(14, state.fontSize - 2);
+                        updateFontSizeUI();
+                        renderTextToScroller(); if (state.scrollOffset > 0) applyScrollOffset();
+                        saveState(); } break;
+                    case 'e': if (!isEditing && !e.ctrlKey && !e.metaKey) { e.preventDefault();
+                        toggleEditorPanel(); } break;
+                }
+            }
+
+            function showToast(message) {
+                clearTimeout(toastTimeout);
+                toast.textContent = message;
+                toast.classList.add('show');
+                toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000);
+            }
+
+            // 啟動
+            init();
+            updateVoiceButtons();
+
+            console.log('🎙️ 專業提詞器 · 語音版已就緒');
+            console.log('   🔊 點擊底部語音按鈕展開語音設定');
+            console.log('   🗣️ 支援語音角色、語速、語調調整');
+        })();
+    </script>
+</body>
+</html>
